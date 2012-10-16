@@ -1,0 +1,139 @@
+#coding:UTF8
+import MySQLdb,time
+db=["10.2.1.218","beluga","beluga",3306]
+class sqls:
+    sql_list=["general",]
+    sql_general=["show global variables like 'version%';","show global status like 'uptime';",
+                 "show variables like '%character_set%';","show engines;"]
+    sql_dir=["'%dir'", "'log_error'","'log_bin%'","'slow%'","'general%'"]  
+    sql_deploy=["show slave status;","show slave hosts;"]
+    sql_cluster="show variables like 'have_ndbcluster%'"
+    sql_schema=["SELECT DISTINCT table_schema FROM `information_schema`.tables WHERE table_schema NOT IN('information_schema','performance_schema','`mysql`','test');",
+             "SELECT COUNT(*) FROM `information_schema`.tables WHERE table_schema=%s",
+             "SELECT COUNT(*) FROM `information_schema`.`TRIGGERS`",
+             "SELECT COUNT(*) FROM `information_schema`.`ROUTINES`",
+             "SELECT COUNT(*) FROM `information_schema`.`VIEWS`"
+             ]
+    sql_partition=["show variables like 'have_part%'",
+                   "SELECT DISTINCT table_name,partition_method FROM `information_schema`.`PARTITIONS` WHERE partition_name IS NOT NULL"
+                   ]
+    sql_user="select user,host from mysql.user"
+def db_conect():
+    try:        
+        conn=MySQLdb.connect(host=db[0],user=db[1],passwd=db[2],port=db[3])
+        cursor=conn.cursor()
+        return cursor
+    except Exception,ex:
+        return ex
+def log(key="Default",value="Default",logtype=0):
+    ### type: 1 title    0 content  3 formate
+    try:
+        #print string        
+        filename=time.strftime('%Y-%m-%d',time.localtime(time.time()))
+        logfile=file('/tmp/'+filename,'a')
+        if logtype==1:
+            logfile.write(value+"\n")
+        elif logtype==0:
+            string="%-35s:  %-10s"%(key,value)
+            logfile.write(string+"\n")
+        else:
+            logfile.write("===============================\n")
+    except Exception,ex:
+        return ex
+def merge_data():
+    try:
+        log(logtype=3) 
+        for sql in sqls.sql_general:
+            get_data(sql)        
+        for sql in sqls.sql_dir:
+            get_data("show variables like "+sql)
+        deploy_data(sqls.sql_deploy[0])
+        schema_data(sqls.sql_schema[0])
+        part_data(sqls.sql_partition[0])
+        get_data(sqls.sql_user)
+    except Exception,ex:
+        log(value=str(ex),logtype=1)
+def schema_data(sql):
+    try:
+        log(value="#counts of table for each db#",logtype=1)
+        cursor=db_conect()
+        cursor.execute(sql)
+        result=cursor.fetchall()
+        for db in result:
+            cursor.execute(sqls.sql_schema[1],db[0])
+            table_count=cursor.fetchone()[0]
+            log(db[0],table_count,0)
+        log(value="============",logtype=1)
+        cursor.execute(sqls.sql_schema[3])
+        result=cursor.fetchone()
+        log("procedure_count",result[0],0)
+        cursor.execute(sqls.sql_schema[2])
+        result=cursor.fetchone()
+        log("trigger_count",result[0],0)
+        cursor.execute(sqls.sql_schema[4])
+        result=cursor.fetchone()
+        log("view_count",result[0],0)
+        log(logtype=3)
+    except Exception,ex:
+        log(value=str(ex),logtype=1)
+def part_data(sql):
+    try:
+        cursor=db_conect()
+        cursor.execute(sql)
+        result=cursor.fetchone()
+        log(result[0],result[1],0)
+        if result[1]=="YES":
+            log(value="#partion tables#",logtype=1)
+            cursor.execute(sqls.sql_partition[1])
+            result=cursor.fetchall()
+            for r in result:
+                log(r[0],r[1],0)
+        log(logtype=3)
+    except Exception,ex:
+        log(value=str(ex),logtype=1)         
+def deploy_data(sql):    
+    try:
+        cursor=db_conect()
+        cursor.execute(sql)        
+        result=cursor.fetchone()
+        if not result or result == "" :
+            log("is_slave","NO",0)            
+        else:
+            log("is_slave","YES",0) 
+            log("master_host",result[1],0)
+            log("master_port",result[3],0)
+            log("io_stat",result[10],0)
+            log("sql_stat",result[1],0)
+            log("delay_time",result[30],0)
+            log(value="============",logtype=1)
+        cursor.execute(sqls.sql_deploy[1])
+        result=cursor.fetchall()
+        if not result or result == "":
+            log("is_master","NO",0)
+        else:
+            for r in result:
+                log("slave_info",r[0]+r[1]+r[2]+r[3])
+        cursor.execute(sqls.sql_cluster)
+        result=cursor.fetchone()
+        log(result[0],result[1],0)               
+        log(logtype=3)
+    except Exception,ex:
+        log(value=str(ex),logtype=1)
+def get_data(sql):
+    try:
+        cursor=db_conect()
+        cursor.execute(sql)        
+        result=cursor.fetchall()
+        for r in result:
+            log(r[0],r[1],0)
+        log(logtype=3)
+    except Exception,ex:
+        log(value=str(ex),logtype=1)
+def main():        
+    log("","MySQL Basic information on "+db[0]+":"+str(db[3]),1)
+    merge_data()
+if __name__ == "__main__":
+    main()
+
+
+
