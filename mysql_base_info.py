@@ -1,6 +1,8 @@
 #coding:UTF8
-import MySQLdb,time
+#author xchliu 10-17 2012 
+import MySQLdb,time,getpass,sys
 db=["10.2.1.218","beluga","beluga",3306]
+filename=""
 class sqls:
     sql_list=["general",]
     sql_general=["show global variables like 'version%';","show global status like 'uptime';",
@@ -18,19 +20,44 @@ class sqls:
                    "SELECT DISTINCT table_name,partition_method FROM `information_schema`.`PARTITIONS` WHERE partition_name IS NOT NULL"
                    ]
     sql_user="select user,host from mysql.user"
+def db_config():
+    try:
+        #print db
+        host=raw_input("host:")
+        if not host :
+            db[0]="localhost"
+        else:
+            db[0]=host
+        user=raw_input("user:")
+        if not user:
+            db[1]="root"
+        else:
+            db[1]=user
+        port=raw_input("port:")
+        if not port:
+            db[3]=3306
+        else:
+            db[3]=port        
+        db[2]=getpass.getpass(db[1]+"@"+db[0]+":"+str(db[3])+" password:")
+        cursor=db_conect()
+        cursor.execute("select 1;")
+        if cursor.fetchone()[0] == 1 :
+            return 1
+        else:
+            return 0
+    except Exception:
+        return 0 
 def db_conect():
     try:        
         conn=MySQLdb.connect(host=db[0],user=db[1],passwd=db[2],port=db[3])
         cursor=conn.cursor()
         return cursor
     except Exception,ex:
-        return ex
+        print ex
 def log(key="Default",value="Default",logtype=0):
-    ### type: 1 title    0 content  3 formate
+    ### type: 1 title    0 content  3 formatel
     try:
-        #print string        
-        filename=time.strftime('%Y-%m-%d',time.localtime(time.time()))
-        logfile=file('/tmp/'+filename,'a')
+        logfile=file(filename,'a')
         if logtype==1:
             logfile.write(value+"\n")
         elif logtype==0:
@@ -129,9 +156,21 @@ def get_data(sql):
         log(logtype=3)
     except Exception,ex:
         log(value=str(ex),logtype=1)
-def main():        
-    log("","MySQL Basic information on "+db[0]+":"+str(db[3]),1)
-    merge_data()
+def main():    
+    global filename 
+    file_folder=""   
+    if len(sys.argv) == 2:
+        file_folder=sys.argv[1]        
+    filename=time.strftime('%Y-%m-%d',time.localtime(time.time()))
+    if  not file_folder:
+        filename="/tmp/mysqlbaseinfo_"+db[0]+"_"+filename
+    else:
+        filename=file_folder
+    db_ping=db_config()
+    if db_ping == 1:
+        log("","MySQL Basic information on "+db[0]+":"+str(db[3]),1)
+        merge_data()
+    print "output:"+filename
 if __name__ == "__main__":
     main()
 
