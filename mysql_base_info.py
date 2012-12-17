@@ -1,7 +1,9 @@
 #coding:UTF8
-#author xchliu 10-17 2012 
+##author xchliu 10-17 2012 
+##usage: python mysql_base_info.py outputfile.txt  
+##	 python mysql_base_info.py                 in this case,out data will be put into dir:/tmp/ 
 import MySQLdb,time,getpass,sys
-db=["10.2.1.218","beluga","beluga",3306]
+db=["10.2.1.218","beluga","beluga",3306,"project"]
 filename=""
 class sqls:
     sql_list=["general",]
@@ -21,6 +23,7 @@ class sqls:
                    ]
     sql_user="select user,host from mysql.user"
 def db_config():
+    global db
     try:
         #print db
         host=raw_input("host:")
@@ -39,6 +42,11 @@ def db_config():
         else:
             db[3]=port        
         db[2]=getpass.getpass(db[1]+"@"+db[0]+":"+str(db[3])+" password:")
+	project=raw_input("project:")
+	if not project:
+	    db[4]="UndefinedProject"
+	else:
+	    db[4]=project
         cursor=db_conect()
         cursor.execute("select 1;")
         if cursor.fetchone()[0] == 1 :
@@ -157,16 +165,16 @@ def get_data(sql):
     except Exception,ex:
         log(value=str(ex),logtype=1)
 def main():    
-    global filename 
+    global filename,db
     file_folder=""   
+    db_ping=db_config()
     if len(sys.argv) == 2:
         file_folder=sys.argv[1]        
-    filename=time.strftime('%Y-%m-%d',time.localtime(time.time()))
+    filename=time.strftime('%Y-%m-%d',time.localtime(time.time()))+"_"+db[4]
     if  not file_folder:
         filename="/tmp/mysqlbaseinfo_"+db[0]+"_"+filename
     else:
-        filename=file_folder
-    db_ping=db_config()
+        filename=file_folder+filename
     if db_ping == 1:
         log("","MySQL Basic information on "+db[0]+":"+str(db[3]),1)
         merge_data()
