@@ -174,7 +174,7 @@ def main():
     if  not file_folder:
         filename="/tmp/mysqlbaseinfo_"+db[0]+"_"+filename
     else:
-        filename=file_folder+filename
+        filename=file_folder+"mysqlbaseinfo_"+db[0]+"_"+filename
     if db_ping == 1:
         log("","MySQL Basic information on "+db[0]+":"+str(db[3]),1)
         merge_data()
