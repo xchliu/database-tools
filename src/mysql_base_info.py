@@ -67,7 +67,7 @@ def db_conect():
 def log(key="Default",value="Default",logtype=0):
     ### type: 1 title    0 content  3 formatel
     try:
-        logfile=file(filename,'w')
+        logfile=file(filename,'a')
         if logtype==1:
             logfile.write(value+"\n")
         elif logtype==0:
