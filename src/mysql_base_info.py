@@ -67,7 +67,7 @@ def db_conect():
 def log(key="Default",value="Default",logtype=0):
     ### type: 1 title    0 content  3 formatel
     try:
-        logfile=file(filename,'a')
+        logfile=file(filename,'w')
         if logtype==1:
             logfile.write(value+"\n")
         elif logtype==0:
@@ -169,23 +169,27 @@ def get_data(sql):
 def main():    
     global filename,db
     file_folder=""   
-    if len(sys.argv) == 3:
-        file_folder=sys.argv[1]        
     filename=time.strftime('%Y-%m-%d',time.localtime(time.time()))+"_"+sys.argv[2]
-    if  not file_folder:
-        filename="/tmp/MysqlBaseinfo_"+db[0]+"_"+filename
-    else:
-        filename=file_folder+"MysqlBaseinfo_"+"_"+filename
+    if len(sys.argv) == 3:
+        file_folder=sys.argv[1]
+        filename=sys.argv[2]
+        filename=file_folder+filename  
+        print filename 
+        log("","MySQL Basic information on "+":"+str(db[3]),1)
+        merge_data()        
+        sys.exit()
     if len(sys.argv) == 4:
+        file_folder=sys.argv[1]
         db_ping=db_config()
         if db_ping == 1:
             log("","MySQL Basic information on "+":"+str(db[3]),1)
+            if  not file_folder:
+                filename="/tmp/MysqlBaseinfo"+"_"+filename
+            else:
+                filename=file_folder+"MysqlBaseinfo"+"_"+filename 
             merge_data()
         else:
             sys.exit()
-    else:
-        log("","MySQL Basic information on "+":"+str(db[3]),1)
-        merge_data()
     print "output:"+filename
 if __name__ == "__main__":
     main()
