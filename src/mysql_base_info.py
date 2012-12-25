@@ -1,9 +1,9 @@
 #coding:UTF8
 ##author xchliu 10-17 2012 
 ##usage: python mysql_base_info.py outputfile.txt  
-##	 python mysql_base_info.py                 in this case,out data will be put into dir:/tmp/ 
+##	     python mysql_base_info.py                  --in this case,output file:/tmp/ 
 import MySQLdb,time,getpass,sys
-db=["10.2.1.218","beluga","beluga",3306,"project"]
+db=["localhost","backup","backup",3306,"Undefined_Project"]
 filename=""
 class sqls:
     sql_list=["general",]
@@ -23,6 +23,8 @@ class sqls:
                    ]
     sql_user="select user,host from mysql.user"
 def db_config():
+    """ config the db source by user
+    """
     global db
     try:
         #print db
@@ -42,11 +44,11 @@ def db_config():
         else:
             db[3]=port        
         db[2]=getpass.getpass(db[1]+"@"+db[0]+":"+str(db[3])+" password:")
-	project=raw_input("project:")
-	if not project:
-	    db[4]="UndefinedProject"
-	else:
-	    db[4]=project
+        project=raw_input("project:")
+        if not project:
+            db[4]="UndefinedProject"
+        else:
+            db[4]=project
         cursor=db_conect()
         cursor.execute("select 1;")
         if cursor.fetchone()[0] == 1 :
@@ -167,15 +169,21 @@ def get_data(sql):
 def main():    
     global filename,db
     file_folder=""   
-    db_ping=db_config()
     if len(sys.argv) == 2:
         file_folder=sys.argv[1]        
     filename=time.strftime('%Y-%m-%d',time.localtime(time.time()))+"_"+db[4]
     if  not file_folder:
-        filename="/tmp/mysqlbaseinfo_"+db[0]+"_"+filename
+        filename="/tmp/MysqlBaseinfo_"+db[0]+"_"+filename
     else:
-        filename=file_folder+"mysqlbaseinfo_"+db[0]+"_"+filename
-    if db_ping == 1:
+        filename=file_folder+"MysqlBaseinfo_"+db[0]+"_"+filename
+    if len(sys.argv) == 3:
+        db_ping=db_config()
+        if db_ping == 1:
+            log("","MySQL Basic information on "+db[0]+":"+str(db[3]),1)
+            merge_data()
+        else:
+            sys.exit()
+    else:
         log("","MySQL Basic information on "+db[0]+":"+str(db[3]),1)
         merge_data()
     print "output:"+filename
