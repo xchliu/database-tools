@@ -169,22 +169,22 @@ def get_data(sql):
 def main():    
     global filename,db
     file_folder=""   
-    if len(sys.argv) == 2:
+    if len(sys.argv) == 3:
         file_folder=sys.argv[1]        
-    filename=time.strftime('%Y-%m-%d',time.localtime(time.time()))+"_"+db[4]
+    filename=time.strftime('%Y-%m-%d',time.localtime(time.time()))+"_"+sys.argv[2]
     if  not file_folder:
         filename="/tmp/MysqlBaseinfo_"+db[0]+"_"+filename
     else:
-        filename=file_folder+"MysqlBaseinfo_"+db[0]+"_"+filename
-    if len(sys.argv) == 3:
+        filename=file_folder+"MysqlBaseinfo_"+"_"+filename
+    if len(sys.argv) == 4:
         db_ping=db_config()
         if db_ping == 1:
-            log("","MySQL Basic information on "+db[0]+":"+str(db[3]),1)
+            log("","MySQL Basic information on "+":"+str(db[3]),1)
             merge_data()
         else:
             sys.exit()
     else:
-        log("","MySQL Basic information on "+db[0]+":"+str(db[3]),1)
+        log("","MySQL Basic information on "+":"+str(db[3]),1)
         merge_data()
     print "output:"+filename
 if __name__ == "__main__":
