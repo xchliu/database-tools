@@ -3,7 +3,7 @@
 ##usage: python mysql_base_info.py outputfile.txt  
 ##	     python mysql_base_info.py                  --in this case,output file:/tmp/ 
 import MySQLdb,time,getpass,sys
-db=["localhost","backup","backup",3306,"Undefined_Project"]
+db=["localhost","monitor","monitor",3306,"Undefined_Project"]
 filename=""
 class sqls:
     sql_list=["general",]
@@ -149,7 +149,7 @@ def deploy_data(sql):
             log("is_master","NO",0)
         else:
             for r in result:
-                log("slave_info",r[0]+r[1]+r[2]+r[3])
+                log("slave_info",str(r[0])+str(r[1])+str(r[2])+str(r[3]))
         cursor.execute(sqls.sql_cluster)
         result=cursor.fetchone()
         log(result[0],result[1],0)               
