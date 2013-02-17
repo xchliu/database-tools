@@ -30,7 +30,7 @@ class Repl_Monitor():
                 else:
                     print 1
             else:
-                print "NULL"
+                print -1
             cursor.close()
             conn.close()
         except Exception, ex:
