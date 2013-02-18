@@ -1,5 +1,6 @@
 from libs import sendmail
 import MySQLdb
+import sys
 
 class Repl_Monitor():
     def __init__(self,port=3306,host='127.0.0.1'):
@@ -36,5 +37,6 @@ class Repl_Monitor():
         except Exception, ex:
             print ex
 if __name__ == "__main__":
-    R=Repl_Monitor()
+    port=sys.argv[1]
+    R=Repl_Monitor(port)
     R.replicat_monitor()
