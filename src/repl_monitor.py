@@ -38,5 +38,5 @@ class Repl_Monitor():
             print ex
 if __name__ == "__main__":
     port=sys.argv[1]
-    R=Repl_Monitor(port)
+    R=Repl_Monitor(int(port))
     R.replicat_monitor()
