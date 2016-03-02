@@ -1,4 +1,4 @@
-from libs import sendmail
+from lib import sendmail
 import MySQLdb
 import sys
 
