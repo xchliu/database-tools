@@ -10,6 +10,7 @@ from src.meta_data.table import Table
 from weight import TOTAL
 from weight import table_weight
 
+
 class CheckItem(object):
     """
 
@@ -17,6 +18,16 @@ class CheckItem(object):
     def __init__(self, table):
         self.table = table
         self.columns = table.columns
+        self.column_num = len(self.columns)
+
+
+    def isnull(self):
+        """
+        check the column define of null
+        :return:
+        """
+
+
 
     def primary(self):
         """
@@ -42,7 +53,6 @@ class CheckItem(object):
         if 'auto_increment' in primary.extra:
             counter += 2
         score = float(counter)/6*TOTAL
-        print score
         return score
 
 
@@ -52,6 +62,7 @@ def estimate(schema, table):
     :return a tuple(score, [suggest])
     """
     score = list()
+    score_detail = dict()
     t = Table(schema, table)
     c = CheckItem(t)
     for item,weight in table_weight.items():
@@ -60,9 +71,10 @@ def estimate(schema, table):
             continue
         func = getattr(c, item, None)
         if func:
-            score.append((weight, func()))
-    print score
-    return avg_score(score)
+            s = func()
+            score.append((weight, s))
+            score_detail[item] = (weight, s)
+    return avg_score(score), score_detail
 
 
 def avg_score(scores):
@@ -82,7 +94,7 @@ def estimate_column():
 
 
 def main():
-    print estimate('mega', 'report_weekly')
+    print estimate('mega', 'sql_format')
     return
 
 

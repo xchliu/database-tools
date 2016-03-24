@@ -8,6 +8,8 @@
 TOTAL = 100
 table_weight = {
     'primary': 50,
+    'isnull': 10,
+
 }
 
 
